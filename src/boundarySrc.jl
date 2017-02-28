@@ -3,8 +3,9 @@ export getMTsrc, solveMTsystem
 
 #--------------------------------------------------------------------
 
-function getMTsrc(M::OcTreeMesh, 
-                  pe::Vector{Int64})  # lookup table for new edge enumeration
+function getMTsrc(M::OcTreeMesh)
+
+    _, _, pe = getEdgeConstraints(M)
 
     EXN, EYN, EZN = getEdgeNumbering(M)
 

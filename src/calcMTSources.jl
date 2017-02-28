@@ -17,8 +17,7 @@ function calcMTSources(sigma::Vector,   # conductivity
     Mmu  = getFaceMassMatrix(param.Mesh,fill(1/mu,length(sigma))) 
 
     # eliminate hanging edges and faces
-    Ne,Qe,pe = getEdgeConstraints(param.Mesh)
-    Qe = []
+    Ne, = getEdgeConstraints(param.Mesh)
     Nf,Qf = getFaceConstraints(param.Mesh)
 
     iw = complex(0., w)
@@ -29,7 +28,7 @@ function calcMTSources(sigma::Vector,   # conductivity
 
     A   = Curl' * Mmu * Curl - iw * Msig
 
-    bInd1, inInd1, bInd2, inInd2 = getMTsrc(param.Mesh, pe)
+    bInd1, inInd1, bInd2, inInd2 = getMTsrc(param.Mesh)
 
     q1 = solveMTsystem(A, Ne, bInd1, inInd1, param.Ainv, param)
     q2 = solveMTsystem(A, Ne, bInd2, inInd2, param.Ainv, param)
