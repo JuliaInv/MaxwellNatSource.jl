@@ -1,101 +1,66 @@
 
-export getMTsrc, solveMTsystem
+export getMTsrc
 
-#--------------------------------------------------------------------
-
-function getMTsrc(M::OcTreeMesh)
+function getMTsrc(M::AbstractMesh)
 
     _, _, pe = getEdgeConstraints(M)
 
-    EXN, EYN, EZN = getEdgeNumbering(M)
+    gEx, gEy, gEz = getEdgeGrids(M)
 
-    # X Edges
-    s1,s2,s3 = size(EXN)
-    i,j,k = find3(EXN)
+    indBottomX = find(gEx[:,3] .== minimum(gEx[:,3]))
+    indTopX = find(gEx[:,3] .== maximum(gEx[:,3]))
+    indSouthX = find(gEx[:,2] .== minimum(gEx[:,2]))
+    indNorthX = find(gEx[:,2] .== maximum(gEx[:,2]))
 
-    indBottomX = find(k.==1)
-    indTopX    = find(k.==s3)
-    indSidesX  = [ find(j.==1) ; find(j.==s2) ]
+    indBottomY = find(gEy[:,3] .== minimum(gEy[:,3]))
+    indTopY = find(gEy[:,3] .== maximum(gEy[:,3]))
+    indWestY = find(gEy[:,1] .== minimum(gEy[:,1]))
+    indEastY = find(gEy[:,1] .== maximum(gEy[:,1]))
 
-    # Y Edges
-    s1,s2,s3 = size(EYN)
-    i,j,k = find3(EYN)
+    indWestZ = find(gEz[:,1] .== minimum(gEz[:,1]))
+    indEastZ = find(gEz[:,1] .== maximum(gEz[:,1]))
+    indSouthZ = find(gEz[:,2] .== minimum(gEz[:,2]))
+    indNorthZ = find(gEz[:,2] .== maximum(gEz[:,2]))
 
-    indBottomY  = find(k.==1)
     indBottomY += M.ne[1]
+    indTopY += M.ne[1]
+    indWestY += M.ne[1]
+    indEastY += M.ne[1]
 
-    indTopY     = find(k.==s3)
-    indTopY    += M.ne[1]
-
-    indSidesY   = [ find(i.==1) ; find(i.==s1) ]
-    indSidesY  += M.ne[1]
-
-    # Z Edges
-    s1,s2,s3 = size(EZN)
-    i,j,k = find3(EZN)
-
-    indXsidesZ  = [ find(i.==1) ; find(i.==s1) ]
-    indXsidesZ += M.ne[1] + M.ne[2]
-
-    indYsidesZ  = [ find(j.==1) ; find(j.==s2) ]
-    indYsidesZ += M.ne[1] + M.ne[2]
+    indWestZ += M.ne[1] + M.ne[2]
+    indEastZ += M.ne[1] + M.ne[2]
+    indSouthZ += M.ne[1] + M.ne[2]
+    indNorthZ += M.ne[1] + M.ne[2]
 
     # Eliminate hanging edges
     indBottomX = removeZeros(pe[indBottomX])
-    indTopX    = removeZeros(pe[indTopX   ])
-    indSidesX  = removeZeros(pe[indSidesX ])
+    indTopX = removeZeros(pe[indTopX])
+    indSouthX = removeZeros(pe[indSouthX])
+    indNorthX = removeZeros(pe[indNorthX])
     indBottomY = removeZeros(pe[indBottomY])
-    indTopY    = removeZeros(pe[indTopY   ])
-    indSidesY  = removeZeros(pe[indSidesY ])
-    indXsidesZ = removeZeros(pe[indXsidesZ])
-    indYsidesZ = removeZeros(pe[indYsidesZ])
+    indTopY = removeZeros(pe[indTopY])
+    indWestY = removeZeros(pe[indWestY])
+    indEastY = removeZeros(pe[indEastY])
+    indWestZ = removeZeros(pe[indWestZ])
+    indEastZ = removeZeros(pe[indEastZ])
+    indSouthZ = removeZeros(pe[indSouthZ])
+    indNorthZ = removeZeros(pe[indNorthZ])
 
     nedges = countnz(pe) # number of constrained edges
 
     # First polarization
-    bInd1  = [indBottomX; indTopX; indBottomY; indTopY; indSidesY; indXsidesZ]
+    bInd1  = [indBottomX; indTopX; indBottomY; indTopY; 
+              indWestY; indEastY; indWestZ; indEastZ]
     inInd1 = setdiff(collect(1:nedges), bInd1)
+
+    # Second polarization
+    bInd2  = [indBottomX; indTopX; indBottomY; indTopY;
+              indSouthX; indNorthX; indSouthZ; indNorthZ]
+    inInd2 = setdiff(collect(1:nedges), bInd2)
 
     # only return nonzero boundary conditions
     bInd1 = indTopX
-
-    # Second polarization
-    bInd2  = [indBottomX; indTopX; indBottomY; indTopY; indSidesX; indYsidesZ]
-    inInd2 = setdiff(collect(1:nedges), bInd2)
-
     bInd2 = indTopY
 
     return bInd1, inInd1, bInd2, inInd2
-end  # function getMTsrc
-
-#--------------------------------------------------------------------
-
-function solveMTsystem( A::SparseMatrixCSC{Complex128},  # Ne'(Curl'*Mmu*Curl - (im*w)*Msig)Ne
-                        Ne::SparseMatrixCSC,  # EdgeConstraints
-                        bInd::Vector{Int64},  # indices of boundary edges
-                        inInd::Vector{Int64}, # indices of internal edges
-                        Ainv::MUMPSsolver,
-                        param::MaxwellFreqParam )
-    # Solve the MT system for one polarization.
-   
-    bc  = ones(length(bInd))  # boundary condition
-    Aii =  A[inInd,inInd]
-    rhs = -A[inInd, bInd] * bc
-
-    MM = [1]  # not used
-    w = 0. # not used
-
-    Ainv.doClear = 1
-
-    Uin, Ainv = solveMaxFreq(Aii, rhs, MM, param.Mesh, w, Ainv,0)
-    Ainv.doClear = 0
-
-    nedges = size(Ne, 2) # constrained edges
-    U = zeros(Complex128, nedges)
-    U[inInd] = Uin 
-    U[bInd]  = bc   # assume = 0 for derivative
-
-    qq = A * U
-
-    return qq   # fields
-end  # function solveMTsystem
+end

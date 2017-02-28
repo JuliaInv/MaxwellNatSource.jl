@@ -4,7 +4,6 @@ module MaxwellNatSource
     using jInv.Utils
     using jInv.LinearSolvers 
     using KrylovMethods
-    using JOcTree
     using MaxwellFrequency
     using MaxwellUtils
 
@@ -14,6 +13,7 @@ module MaxwellNatSource
     include("getAllObs.jl")
     include("MTderivs.jl")
     include("MTmisfit.jl")
+    include("solveMTsystem.jl")
     include("outputMTdata.jl")
 
 end
