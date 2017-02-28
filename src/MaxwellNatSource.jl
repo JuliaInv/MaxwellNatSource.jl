@@ -7,7 +7,6 @@ module MaxwellNatSource
     using MaxwellFrequency
     using MaxwellUtils
 
-    include("boundarySrc.jl")
     include("calcMTdataDerivarive.jl")
     include("calcMTSources.jl")
     include("getAllObs.jl")
