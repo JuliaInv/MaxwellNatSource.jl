@@ -2,4 +2,4 @@
 *.jl.*.cov
 *.jl.mem
 jInv.out
-
+.ipynb_checkpoints
