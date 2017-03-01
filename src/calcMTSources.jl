@@ -1,5 +1,5 @@
 
-export calcMTSources, getMTSourceEdges
+export calcMTSources, getMTSourceEdges, solveMTsystem
 
 """
     param = calcMTSources(sigma, param, doClear)
@@ -18,13 +18,12 @@ export calcMTSources, getMTSourceEdges
 """
 function calcMTSources(sigma::Array{Float64,1}, param::MaxwellFreqParam, doClear::Bool=false)
 
-    mu   = 4*pi*1e-7
     w    = param.freq
 
     Curl = getCurlMatrix(param.Mesh)
 
     Msig = getEdgeMassMatrix(param.Mesh,vec(sigma))
-    Mmu  = getFaceMassMatrix(param.Mesh,fill(1/mu,length(sigma))) 
+    Mmu  = getFaceMassMatrix(param.Mesh,fill(1/mu0,length(sigma))) 
 
     # eliminate hanging edges and faces
     Ne, = getEdgeConstraints(param.Mesh)
@@ -139,3 +138,51 @@ function getMTSourceEdges(M::AbstractMesh)
     return indTopX, inInd1, indTopY, inInd2
 end
 
+"""
+    qq = solveMTsystem(trx, M)
+    
+    Solve the MT system for one polarization.
+
+    Input:
+    
+        A::SparseMatrixCSC{Complex128} - Forward matrix
+                                       - [ Ne'(Curl'*Mmu*Curl - (im*w)*Msig)Ne ]
+        Ne::SparseMatrixCSC            - # EdgeConstraints
+        bInd::Vector{Int64}            - indices of boundary edges
+        inInd::Vector{Int64}           - indices of internal edges
+        Ainv::MUMPSsolver              - Solver
+        param::MaxwellFreqParam        - Forward model paramaters (pfor)
+        
+
+    Output:
+    
+        Obs::Array{SparseMatrixCSC} - Array containing the interpolation matrix for each receiver
+"""
+function solveMTsystem( A::SparseMatrixCSC{Complex128},
+                        Ne::SparseMatrixCSC,
+                        bInd::Vector{Int64},
+                        inInd::Vector{Int64},
+                        Ainv::MUMPSsolver,
+                        param::MaxwellFreqParam )
+   
+    bc  = ones(length(bInd))  # boundary condition
+    Aii =  A[inInd,inInd]
+    rhs = -A[inInd, bInd] * bc
+
+    MM = [1]  # not used
+    w = 0. # not used
+
+    Ainv.doClear = 1
+
+    Uin, Ainv = solveMaxFreq(Aii, rhs, MM, param.Mesh, w, Ainv,0)
+    Ainv.doClear = 0
+
+    nedges = size(Ne, 2) # constrained edges
+    U = zeros(Complex128, nedges)
+    U[inInd] = Uin 
+    U[bInd]  = bc   # assume = 0 for derivative
+
+    qq = A * U
+
+    return qq   # fields
+end  # function solveMTsystem
