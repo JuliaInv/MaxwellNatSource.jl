@@ -53,6 +53,47 @@ function calcMTSources(sigma::Array{Float64,1}, param::MaxwellFreqParam, doClear
     return param 
 end # function calcMTSources
 
+function calcMTSources(sigma::Array{Float64,1},
+                        param::RemoteChannel,
+                        doClear::Bool=false)
+
+    pF = take!(param)
+    pF = calcMTSources(sigma,pF,doClear)
+    put!(param,pF)
+    return param
+end
+
+function calcMTSources(sigma::Array{Float64,1},
+                       param::Array{RemoteChannel},
+                       doClear::Bool=false)
+
+    # find out which workers are involved
+    workerList = []
+    for k=1:length(param)
+        push!(workerList,param[k].where)
+    end
+    workerList = unique(workerList)
+
+    @sync begin
+        for p=workerList
+            @async begin
+
+                # solve forward problems
+                for idx=1:length(param)
+                    if p==param[idx].where
+                        param[idx] = remotecall_fetch(calcMTSources, p, sigma, 
+                                                      param[idx], doClear )
+                    end
+                end
+            end
+        end
+    end
+    return param
+end
+
+
+
+
 #----------------------------------------------------------------------------------
 
 """
