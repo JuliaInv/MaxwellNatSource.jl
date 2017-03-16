@@ -12,6 +12,7 @@ export calcMTSources, getMTSourceEdges, solveMTsystem
         sigma::Array{Float64,1} - Conductivity model
         param::MaxwellFreqParam - Forward model paramaters (pfor)
         doClear::Bool           - A flag that cleas Ainv and the calculated fields
+            
     Output:
     
         param::MaxwellFreqParam - Forward model paramaters (pfor)

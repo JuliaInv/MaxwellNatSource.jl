@@ -10,10 +10,13 @@ module MaxwellNatSource
     const mu0 = 4*pi*1e-7
 
     include("calcMTdataDerivarive.jl")
+    include("calcZTEMdataDerivarive.jl")
     include("calcMTSources.jl")
     include("getAllObs.jl")
     include("MTderivs.jl")
+    include("ZTEMderivs.jl")
     include("MTmisfit.jl")
     include("outputMTdata.jl")
+    include("outputZTEMdata.jl")
 
 end
