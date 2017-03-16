@@ -227,3 +227,21 @@ function solveMTsystem( A::SparseMatrixCSC{Complex128},
 
     return qq   # fields
 end  # function solveMTsystem
+
+"""
+    A = removeZeros(A)
+    
+    Make array shorter by removing all zero values.
+
+    Input:
+    
+        A::Array - An array        
+
+    Output:
+    
+        A::Array - Array with zeros removed
+"""
+function removeZeros( A::Array )
+    A = A[A .!= 0]
+    return A
+end

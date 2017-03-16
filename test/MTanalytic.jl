@@ -99,7 +99,7 @@ maxAmpErr = round(maximum(abs((abs(Zanalytic)-abs(Zc))./abs(Zanalytic)))*100,1)
 maxPhaseErr = round(maximum(abs(45+phase(Zc))),1)
 
 println("Max. Amp. Error = $maxAmpErr percent")
-println("Max. Amp. Error = $maxPhaseErr degrees")
+println("Max. Phase Error = $maxPhaseErr degrees")
 
 @test all(abs(Zanalytic - Zc)./abs(Zanalytic) .< 0.05)
 @test all(abs(45+phase(Zc)).<2.)
