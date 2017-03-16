@@ -1,5 +1,5 @@
 
-export outputFieldZTEMdata, outputZTEMdata, 
+export outputFieldZTEMdata, outputZTEMdata
 
 
 function outputFieldZTEMdata( filename::String, trx::TransmitterOmega, DD::Vector{Complex128} )
