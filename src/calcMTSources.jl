@@ -19,32 +19,13 @@ export calcMTSources, getMTSourceEdges, solveMTsystem
 """
 function calcMTSources(sigma::Array{Float64,1}, param::MaxwellFreqParam, doClear::Bool=false)
 
-    w    = param.freq
-
-    Curl = getCurlMatrix(param.Mesh)
-
-    Msig = getEdgeMassMatrix(param.Mesh,vec(sigma))
-    Mmu  = getFaceMassMatrix(param.Mesh,fill(1/mu0,length(sigma))) 
-
-    # eliminate hanging edges and faces
-    Ne, = getEdgeConstraints(param.Mesh)
-    Nf,Qf = getFaceConstraints(param.Mesh)
-
-    iw = complex(0., w)
-
-    Curl = Qf  * Curl * Ne
-    Msig = Ne' * Msig * Ne
-    Mmu  = Nf' * Mmu  * Nf
-
-    A   = Curl' * Mmu * Curl - iw * Msig
-
     bInd1, inInd1, bInd2, inInd2 = getMTSourceEdges(param.Mesh)
 
-    q1 = solveMTsystem(A, Ne, bInd1, inInd1, param.Ainv, param)
-    q2 = solveMTsystem(A, Ne, bInd2, inInd2, param.Ainv, param)
+    q1 = solveMTsystem(bInd1, inInd1, param, sigma)
+    q2 = solveMTsystem(bInd2, inInd2, param, sigma)
 
-    param.Sources = Ne * [ q1  q2 ]
-    param.Sources /= iw
+    Ne, = getEdgeConstraints(param.Mesh)
+    param.Sources = (Ne*[ q1  q2 ])/complex(0., param.freq)
 
     if doClear
         # clear fields and factorization
@@ -200,26 +181,23 @@ end
     
         Obs::Array{SparseMatrixCSC} - Array containing the interpolation matrix for each receiver
 """
-function solveMTsystem( A::SparseMatrixCSC{Complex128},
-                        Ne::SparseMatrixCSC,
-                        bInd::Vector{Int64},
+function solveMTsystem( bInd::Vector{Int64},
                         inInd::Vector{Int64},
-                        Ainv::AbstractSolver,
-                        param::MaxwellFreqParam )
+                        param::MaxwellFreqParam,
+                        sigma::Vector{Float64})
    
+
+    A = getMaxwellFreqMatrix(sigma,param.freq,param.Mesh)
+
     bc  = ones(length(bInd))  # boundary condition
-    Aii =  A[inInd,inInd]
+    Aii =  A[inInd, inInd]
     rhs = -A[inInd, bInd] * bc
 
-    MM = [1]  # not used
-    w = 0. # not used
+    param.Ainv.doClear = 1
+    Uin, param.Ainv = solveMaxFreq(Aii, rhs, sigma, param.Mesh, param.freq, param.Ainv)
+    param.Ainv.doClear = 0
 
-    Ainv.doClear = 1
-
-    Uin, Ainv = solveMaxFreq(Aii, rhs, MM, param.Mesh, w, Ainv,0)
-    Ainv.doClear = 0
-
-    nedges = size(Ne, 2) # constrained edges
+    nedges = size(A, 2) # constrained edges
     U = zeros(Complex128, nedges)
     U[inInd] = Uin 
     U[bInd]  = bc   # assume = 0 for derivative
