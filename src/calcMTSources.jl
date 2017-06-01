@@ -192,7 +192,7 @@ end
         Ne::SparseMatrixCSC            - # EdgeConstraints
         bInd::Vector{Int64}            - indices of boundary edges
         inInd::Vector{Int64}           - indices of internal edges
-        Ainv::MUMPSsolver              - Solver
+        Ainv::AbstractSolver           - Solver
         param::MaxwellFreqParam        - Forward model paramaters (pfor)
         
 
@@ -204,7 +204,7 @@ function solveMTsystem( A::SparseMatrixCSC{Complex128},
                         Ne::SparseMatrixCSC,
                         bInd::Vector{Int64},
                         inInd::Vector{Int64},
-                        Ainv::MUMPSsolver,
+                        Ainv::AbstractSolver,
                         param::MaxwellFreqParam )
    
     bc  = ones(length(bInd))  # boundary condition

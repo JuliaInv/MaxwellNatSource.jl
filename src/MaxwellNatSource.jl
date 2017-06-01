@@ -7,6 +7,7 @@ module MaxwellNatSource
     using MaxwellFrequency
     using MaxwellUtils
 
+    export mu0
     const mu0 = 4*pi*1e-7
 
     include("calcMTdataDerivarive.jl")
@@ -18,5 +19,6 @@ module MaxwellNatSource
     include("MTmisfit.jl")
     include("outputMTdata.jl")
     include("outputZTEMdata.jl")
+    include("Utils.jl")
 
 end
