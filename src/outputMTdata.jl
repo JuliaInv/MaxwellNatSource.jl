@@ -56,6 +56,7 @@ end  # function outputMTdata
 #--------------------------------------------------------------------------
 
 using jInv.ForwardShare.interpGlobalToLocal
+using JOcTree
 
 function dumpMT( mc::Array{Float64,1},
                  Dc::Array{Future,1},
@@ -69,7 +70,7 @@ function dumpMT( mc::Array{Float64,1},
     sigma,dsigma = Mis.modelfun(sigt)
     sigmaloc = interpGlobalToLocal(sigma,Mis.gloc.PForInv,Mis.gloc.sigmaBackground)
 
-    exportOcTreeModelRoman("m.con", pInv.MInv, sigmaloc)
+    exportUBCOcTreeModel("m.con", pInv.MInv, sigmaloc)
 
     return
 end  # function dumpMT

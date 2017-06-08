@@ -13,7 +13,7 @@ Minv = setupBigOctreeMeshPolygonWithRecs(trx, nsmallcells, h,n,x0, itopo,
 
 println("Inverse mesh has ", Minv.nc, " cells")
 
-exportOcTreeMeshRoman("meshInv.txt",Minv)
+exportUBCOcTreeMesh("meshInv.txt",Minv)
 toc()
 
 # ----- Generate initial model -------------------------------------------
@@ -32,7 +32,7 @@ sigmaBackground = IactBck * sigmaBck
 
 
 sigmamodel = Iact*sigma + sigmaBackground
-exportOcTreeModelRoman("model0.con",Minv, sigmamodel)
+exportUBCOcTreeModel("model0.con",Minv, sigmamodel)
 toc()
 
 

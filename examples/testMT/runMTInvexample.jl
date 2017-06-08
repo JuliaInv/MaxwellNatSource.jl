@@ -13,11 +13,11 @@ trx, h, itopo = setupMeshParam(datafile, topofile, n,x0,meshL; only_loc=true )
 #
 #println("Inverse mesh has ", Minv.nc, " cells")
 #
-#exportOcTreeMeshRoman("meshInv.txt",Minv)
+#exportUBCOcTreeMesh("meshInv.txt",Minv)
 #toc()
 
 
-Minv = importOcTreeMeshRoman(meshfile)
+Minv = importUBCOcTreeMesh(meshfile)
 
 
 # ----- Generate initial model -------------------------------------------
@@ -36,9 +36,9 @@ IactBck = IactBck[:,find(!isactive)]
 #
 #
 #sigmamodel = Iact*sigma + sigmaBackground
-#exportOcTreeModelRoman("model0.con",Minv, sigmamodel)
+#exportUBCOcTreeModel("model0.con",Minv, sigmamodel)
 
-sigmamodel = importOcTreeModelRoman(truemodelfile, Minv)
+sigmamodel = importUBCOcTreeModel(truemodelfile, Minv)
 #toc()
 
 
