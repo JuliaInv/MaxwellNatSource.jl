@@ -30,7 +30,7 @@ sigma, sigmaBck, isactive = getInitialmodel(Minv, itopo, halfSpaceCond, backCond
 Iact    = speye(Bool,Minv.nc)
 Iact    = Iact[:,find(isactive)]
 IactBck = speye(Bool,Minv.nc)
-IactBck = IactBck[:,find(!isactive)]
+IactBck = IactBck[:,find(.!isactive)]
 
 #sigmaBackground = IactBck * sigmaBck
 #
@@ -54,7 +54,7 @@ linSolParam = getMUMPSsolver([],1,0,2)
 using jInv.Utils.initRemoteChannel
 
 nFreqs = length(trx)
-pFor   = Array(RemoteChannel,nFreqs)
+pFor   = Array{RemoteChannel}(nFreqs)
 workerList = workers()
 nw         = length(workerList)
 for i = 1:nFreqs
@@ -62,8 +62,8 @@ for i = 1:nFreqs
 #     pFor[i] = initRemoteChannel(getMaxwellFreqParamSE,workerList[i%nw+1],
 #                                    M,Sources,Obs[i],fields,frq[i],linSolParam)
 #  else
-   Sources = Array(Complex128, 0, 0)
-   fields = Array(Complex128, 0, 0)
+   Sources = Array{Complex128}(0, 0)
+   fields = Array{Complex128}(0, 0)
    pFor[i] = initRemoteChannel(getMaxwellFreqParam, workerList[i%nw+1],
                                Minv, Sources, Obs[i], fields,
                                trx[i].omega, linSolParam)
@@ -103,8 +103,8 @@ Wd    = Array{Array{Complex128}}(nFreqs)
 
 trx[itx].Dobs = calcMTdata(DD)
 
-trx[itx].Wd = complex( 1.0 ./ (abs(real(trx[itx].Dobs))*0.01+1.e-5) ,
-                       1.0 ./ (abs(imag(trx[itx].Dobs))*0.01+1.e-5) );
+trx[itx].Wd = complex.(1.0./(abs.(real(trx[itx].Dobs))*0.01+1.e-5),
+                       1.0./(abs.(imag(trx[itx].Dobs))*0.01+1.e-5))
 
 Dobs[itx] = trx[itx].Dobs
   Wd[itx] = trx[itx].Wd
@@ -146,4 +146,3 @@ tic()
 m0 = fill(log(halfSpaceCond), size(Iact,2))
 mc,Dc,flag = projGNCG(m0,pInv,pMisRF,  dumpResults=dumpMT)
 toc()
-

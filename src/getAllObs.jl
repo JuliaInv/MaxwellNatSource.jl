@@ -20,7 +20,7 @@ function getAllObs( trx::Array{TransmitterOmega}, M::AbstractMesh )
     nedges = sum( M.ne )
     nfreq = length(trx)
 
-    Obs = Array(SparseMatrixCSC{Complex{Float64},Int64}, nfreq)
+    Obs = Array{SparseMatrixCSC{Complex{Float64},Int64}}(nfreq)
 
     for itx = 1:nfreq
        

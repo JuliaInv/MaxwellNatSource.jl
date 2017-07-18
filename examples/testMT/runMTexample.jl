@@ -26,7 +26,7 @@ sigma, sigmaBck, isactive = getInitialmodel(Minv, itopo, halfSpaceCond, backCond
 Iact    = speye(Bool,Minv.nc)
 Iact    = Iact[:,find(isactive)]
 IactBck = speye(Bool,Minv.nc)
-IactBck = IactBck[:,find(!isactive)]
+IactBck = IactBck[:,find(.!isactive)]
 
 sigmaBackground = IactBck * sigmaBck
 
@@ -48,12 +48,12 @@ linSolParam = getMUMPSsolver([],1,0,2)
 using jInv.Utils.initRemoteChannel
 
 nFreqs = length(trx)
-pFor   = Array(RemoteChannel,nFreqs)
+pFor   = Array{RemoteChannel}(nFreqs)
 workerList = workers()
 nw         = length(workerList)
 for i = 1:nFreqs
-   Sources = Array(Complex128, 0, 0)
-   fields = Array(Complex128, 0, 0)
+   Sources = Array{Complex128}(0, 0)
+   fields = Array{Complex128}(0, 0)
    pFor[i] = initRemoteChannel(getMaxwellFreqParam, workerList[i%nw+1],
                                Minv, Sources, Obs[i], fields,
                                trx[i].omega, linSolParam)

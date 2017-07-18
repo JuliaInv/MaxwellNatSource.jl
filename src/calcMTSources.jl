@@ -169,7 +169,7 @@ end
     Input:
     
         A::SparseMatrixCSC{Complex128} - Forward matrix
-                                       - [ Ne'(Curl'*Mmu*Curl - (im*w)*Msig)Ne ]
+                                       - [ Ne'(Curl'\*Mmu*Curl - (im*w)\*Msig)Ne ]
         Ne::SparseMatrixCSC            - # EdgeConstraints
         bInd::Vector{Int64}            - indices of boundary edges
         inInd::Vector{Int64}           - indices of internal edges

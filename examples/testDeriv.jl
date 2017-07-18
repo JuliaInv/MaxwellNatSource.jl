@@ -10,11 +10,14 @@ ntests = 25
 
 nr = 200
 
-Zobs = complex( rand(2,2,nr), rand(2,2,nr) ) ;  Zobs = Zobs*10. - 5.
-Wd   = complex( ones(2,2,nr), ones(2,2,nr) )  
+Zobs = complex.( rand(2,2,nr), rand(2,2,nr) )
+Zobs = Zobs*10. - 5.
+Wd   = complex.( ones(2,2,nr), ones(2,2,nr) )  
 
-dc    = complex( rand(4*nr,2), rand(4*nr,2) ) ;  dc    = dc*20. - 10
-delta = complex( rand(4*nr,2), rand(4*nr,2) ) ;  delta = delta*0.2 - 0.1
+dc    = complex.( rand(4*nr,2), rand(4*nr,2) )
+dc    = dc*20. - 10
+delta = complex.( rand(4*nr,2), rand(4*nr,2) )
+delta = delta*0.2 - 0.1
 
 
 
@@ -49,9 +52,10 @@ for i = 1:ntests
    @printf("%e  %e  %e  %e\n", h[i], t1[i], t2[i], t3[i])   
 end  # i
 
-plot(log10(h), log10(t1), "b") 
-plot(log10(h), log10(t2), "r")
-plot(log10(h), log10(t3), "g")
+plot(log10.(h), log10.(t1), "b") 
+plot(log10.(h), log10.(t2), "r")
+plot(log10.(h), log10.(t3), "g")
+show()
 
 
 #dc = complex( rand(4,2), rand(4,2) );

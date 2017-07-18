@@ -35,7 +35,7 @@ Srcs = [[0.0 0.0 0.0; 0.0 0.0 0.0]]
 
 omegas = logspace(0,3,5)*2*pi
 
-Recs = Array(Array{Float64},4)
+Recs = Array{Array{Float64}}(4)
 Recs[1] = [-0.5 0. 0.; 
            0.5 0. 0.]
 Recs[2] = [0. -0.5 0.;
@@ -55,7 +55,7 @@ Dobs = [complex(0,0)]
 Wd = [complex(0,0)]
 
 
-trx = Array(TransmitterOmega, length(omegas))
+trx = Array{TransmitterOmega}(length(omegas))
 for (i, w) in enumerate(omegas)
     trx[i] = TransmitterOmega( Srcs, w, Recs, Dobs, Wd )
 end
@@ -64,9 +64,9 @@ Obs = getAllObs( trx, msh );
 
 linSolParam = getMUMPSsolver([],1,0,2);
 
-Sources = Array(Complex128, 0, 0)
-fields = Array(Complex128, 0, 0)
-pFor = Array(MaxwellFreqParam, length(trx))
+Sources = Array{Complex128}(0, 0)
+fields = Array{Complex128}(0, 0)
+pFor = Array{MaxwellFreqParam}(length(trx))
 for i in 1:length(trx)
     pFor[i] = getMaxwellFreqParam(msh, Sources, Obs[i], fields, trx[i].omega, linSolParam);
 end
@@ -74,14 +74,14 @@ end
 # Run the forward problem
 println("Running forward problem...")
 for i in 1:length(trx)
-    pFor[i] = calcMTSources( sigma, pFor[i], true );
+    pFor[i] = calcMTSources( sigma, pFor[i], true )
 end
 
-DDs = Array(Array{Complex{Float64}}, length(trx))
-zdpreds = Array(Array{Complex{Float64}}, length(trx))
+DDs = Array{Array{Complex{Float64}}}(length(trx))
+zdpreds = Array{Array{Complex{Float64}}}(length(trx))
 for i in 1:length(trx)
-    DDs[i], pFor[i] = getData( sigma, pFor[i], true );
-    zdpreds[i] = calcMTdata(DDs[i]);
+    DDs[i], pFor[i] = getData( sigma, pFor[i], true )
+    zdpreds[i] = calcMTdata(DDs[i])
 end
 
 Zc = zeros(Complex128, length(trx))
@@ -95,11 +95,11 @@ for i in 1:length(trx)
     Zanalytic[i] = mu0*im*trx[i].omega/k
 end
 
-maxAmpErr = round(maximum(abs((abs(Zanalytic)-abs(Zc))./abs(Zanalytic)))*100,1)
-maxPhaseErr = round(maximum(abs(45+phase(Zc))),1)
+maxAmpErr = round(maximum(abs.((abs.(Zanalytic)-abs.(Zc))./abs.(Zanalytic)))*100,1)
+maxPhaseErr = round(maximum(abs.(45+phase.(Zc))),1)
 
 println("Max. Amp. Error = $maxAmpErr percent")
 println("Max. Phase Error = $maxPhaseErr degrees")
 
-@test all(abs(Zanalytic - Zc)./abs(Zanalytic) .< 0.05)
-@test all(abs(45+phase(Zc)).<2.)
+@test all(abs.(Zanalytic - Zc)./abs.(Zanalytic) .< 0.05)
+@test all(abs.(45+phase.(Zc)).<2.)
