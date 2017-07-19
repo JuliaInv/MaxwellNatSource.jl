@@ -43,15 +43,38 @@ function outputMTdata(filename::String,
         @printf(fdata, 
                 "%15.7e %15.7e %15.7e   %13.5e %13.5e  %13.5e %13.5e  %13.5e %13.5e  %13.5e %13.5e\n",
                 xx, yy, zz,
-                real(zdpred[1,1,id]), imag(zdpred[1,1,id]),
+                real(zdpred[2,2,id]), imag(zdpred[2,2,id]),
                 real(zdpred[2,1,id]), imag(zdpred[2,1,id]),
                 real(zdpred[1,2,id]), imag(zdpred[1,2,id]),
-                real(zdpred[2,2,id]), imag(zdpred[2,2,id]) )
+                real(zdpred[1,1,id]), imag(zdpred[1,1,id]) )
     end  # id
     close(fdata)
 
     return
 end  # function outputMTdata
+
+#--------------------------------------------------------------------------
+
+function outputMTdataNOxyz(fdata::IOStream,
+                           DD::Array{Complex128,2})
+    # Output the MT Z data.   
+
+    zdpred = calcMTdata(DD)
+       
+   # fdata = open(filename, "w")
+    for id = 1:size(zdpred,3)
+
+        @printf(fdata, 
+                "%13.5e %13.5e  %13.5e %13.5e  %13.5e %13.5e  %13.5e %13.5e\n",
+                real(zdpred[2,2,id]), imag(zdpred[2,2,id]),
+                real(zdpred[2,1,id]), imag(zdpred[2,1,id]),
+                real(zdpred[1,2,id]), imag(zdpred[1,2,id]),
+                real(zdpred[1,1,id]), imag(zdpred[1,1,id]) )
+    end  # id
+   # close(fdata)
+
+    return
+end  # function outputMTdataNOxyz
 
 #--------------------------------------------------------------------------
 
@@ -70,7 +93,18 @@ function dumpMT( mc::Array{Float64,1},
     sigma,dsigma = Mis.modelfun(sigt)
     sigmaloc = interpGlobalToLocal(sigma,Mis.gloc.PForInv,Mis.gloc.sigmaBackground)
 
-    exportUBCOcTreeModel("m.con", pInv.MInv, sigmaloc)
+    modfile = @sprintf("m_%02i.con", iter)
+    exportUBCOcTreeModel(modfile, pInv.MInv, sigmaloc)
+
+    fdata = open("pred.txt", "w")
+
+    for i = 1:length(Dc)
+       dc = fetch(Dc[i])
+       println(fdata)
+       outputMTdataNOxyz(fdata, dc )
+    end
+
+    close(fdata)
 
     return
 end  # function dumpMT

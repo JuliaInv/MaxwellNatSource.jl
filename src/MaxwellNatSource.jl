@@ -19,6 +19,7 @@ module MaxwellNatSource
     include("MTmisfit.jl")
     include("outputMTdata.jl")
     include("outputZTEMdata.jl")
+    include("readMTdata.jl")
     include("Utils.jl")
 
 end

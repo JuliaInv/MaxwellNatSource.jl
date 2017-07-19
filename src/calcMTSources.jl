@@ -25,7 +25,8 @@ function calcMTSources(sigma::Array{Float64,1}, param::MaxwellFreqParam, doClear
     q2 = solveMTsystem(bInd2, inInd2, param, sigma)
 
     Ne, = getEdgeConstraints(param.Mesh)
-    param.Sources = (Ne*[ q1  q2 ])/complex(0., param.freq)
+    iw = complex(0., param.freq)
+    param.Sources = (Ne*[ q1  q2 ]) / iw
 
     if doClear
         # clear fields and factorization
@@ -169,7 +170,7 @@ end
     Input:
     
         A::SparseMatrixCSC{Complex128} - Forward matrix
-                                       - [ Ne'(Curl'\*Mmu*Curl - (im*w)\*Msig)Ne ]
+                                       - [ Ne'(Curl'*Mmu*Curl - (im*w)*Msig)Ne ]
         Ne::SparseMatrixCSC            - # EdgeConstraints
         bInd::Vector{Int64}            - indices of boundary edges
         inInd::Vector{Int64}           - indices of internal edges
@@ -194,7 +195,7 @@ function solveMTsystem( bInd::Vector{Int64},
     rhs = -A[inInd, bInd] * bc
 
     param.Ainv.doClear = 1
-    Uin, param.Ainv = solveMaxFreq(Aii, rhs, sigma, param.Mesh, param.freq, param.Ainv)
+    Uin, param.Ainv = solveMaxFreq(Aii, rhs, sigma, param.Ainv)
     param.Ainv.doClear = 0
 
     nedges = size(A, 2) # constrained edges

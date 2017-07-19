@@ -9,14 +9,14 @@ using jInv.Utils
     mis,dmis,d2mis = misRatio(dc,dobs,Wd)
 
     Input:
-    
+
         dc::Array{Complex128}   - (nr*4,2) simulated data E and H data from polarizations 1 and 2
         dobs::Array{Complex128} - (2,2,nr) measured data  (impedences)
         Wd::Array{Complex128})  - (2,2,nr) diagonal weighting (same units as dobs)
-      
+
     Output:
-   
-        mis::Real   -  misfit, 0.5*|dc-dobs|_Wd^2
+
+        mis::Real   -  misfit, 0.5*|dc-dobs|\_Wd^2
         dmis        -  gradient
         d2mis       -  GN approximation of Hessian
 
@@ -39,7 +39,7 @@ function misRatio(dc::Array{Complex128}, dobs::Array{Complex128}, Wd::Array{Comp
     Wd    = vec(Wd)
     mis   = 0.5 * sum((Wd.*res).^2)  # data misfit
     dmis  = dZdD'*(Wd.*(Wd.*res))
-    d2mis = dZdD' * sdiag(Wd) * sdiag(Wd) * dZdD
+    d2mis = dZdD' * sdiag(Wd.^2) * dZdD
 
     dmis  = real2complex(dmis)
 
