@@ -1,5 +1,5 @@
 using JOcTree
-using MaxwellUtils
+#using MaxwellUtils
 using MaxwellFrequency
 using MaxwellNatSource
 using jInv.LinearSolvers

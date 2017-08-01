@@ -26,7 +26,7 @@ sigma, sigmaBck, isactive = getInitialmodel(Minv, itopo, halfSpaceCond, backCond
 Iact    = speye(Bool,Minv.nc)
 Iact    = Iact[:,find(isactive)]
 IactBck = speye(Bool,Minv.nc)
-IactBck = IactBck[:,find(.!isactive)]
+IactBck = IactBck[:,find(!isactive)]
 
 sigmaBackground = IactBck * sigmaBck
 
