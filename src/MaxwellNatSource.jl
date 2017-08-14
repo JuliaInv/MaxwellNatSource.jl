@@ -26,6 +26,7 @@ module MaxwellNatSource
     include("calcMTdataDerivarive.jl")
     include("calcZTEMdataDerivative.jl")
     include("calcMTSources.jl")
+    include("calcMTSources1D.jl")
     include("getAllObs.jl")
     include("MTderivs.jl")
     include("ZTEMderivs.jl")

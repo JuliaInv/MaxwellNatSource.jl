@@ -81,6 +81,7 @@ pfor = fetch(pFor[itx])
 println("Into calcMTSources")
 tic()
 pfor = calcMTSources( sigmamodel, pfor, true )
+#pfor = calcMTSources1D( sigma1D, pfor )
 toc()
 
 

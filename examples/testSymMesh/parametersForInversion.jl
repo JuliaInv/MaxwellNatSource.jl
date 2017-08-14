@@ -49,6 +49,8 @@ doSE  = false # SE = sensitivity explicit - store sensitivities and not factoriz
 halfSpaceCond = 1e-2
 backCond      = 1.e-8   # air
 
+sigma1D = [ fill(halfSpaceCond,16) ; fill(backCond,16) ]
+
 
 # lower bounds
 BL = 1e-6

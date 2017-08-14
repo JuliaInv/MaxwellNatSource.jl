@@ -19,7 +19,7 @@ function calcMTSources1D(sigma1D::Array{Float64,1}, param::MaxwellFreqParam)
    mlayers_padd = Array{Float64}(nzpadd)
    mlayers_padd[ 1                : npaddlayers+1 ] = sigma1D[1]
    mlayers_padd[ npaddlayers+2    : npaddlayers+nz] = 0.5 * (sigma1D[1:nz-1] + sigma1D[2:nz])
-   mlayers_padd[ npaddlayers+nz+1 : nzpadd]         = mlayers[nz]
+   mlayers_padd[ npaddlayers+nz+1 : nzpadd]         = sigma1D[nz]
 
    layer_top = nzpadd
    layer_bottom = 1
@@ -29,16 +29,21 @@ function calcMTSources1D(sigma1D::Array{Float64,1}, param::MaxwellFreqParam)
    
    AA = complex( -D1' * D1,  0. )
 
-   iw = complex(0., param.freq)
-   kappa = sqrt( iw * mu0 * mlayers_padd[layer_bottom] )
+   if use_iw
+      iw =  complex(0., param.freq)
+   else
+      iw = -complex(0., param.freq)
+   end
    
-   AA[1,1] = (-1.0 + kappa*complex(0.0,dh)) / dh^2
-   AA[1,2] = 1. / dh^2
+   kappa = sqrt( -iw * mu0 * mlayers_padd[layer_bottom] )
+   
+   AA[layer_bottom,layer_bottom] = (-1.0 + kappa*complex(0.0,dh)) / dh^2
+   AA[layer_bottom,2]            = 1. / dh^2
 
-   AA = AA + (iw*mu0)*spdiagm(mlayers_padd, 0, nzpadd,nzpadd)
+   AA = AA + (-iw*mu0)*spdiagm(mlayers_padd, 0, nzpadd,nzpadd)
    
-   qq = zeros(nzpadd)
-   qq[layer_top] =  -1.0 / dh * iw * mu0  # boundary condition in the air layer
+   qq = zeros(Complex128, nzpadd)
+   qq[layer_top] = 1.0 / dh * iw * mu0  # boundary condition in the air layer
    
    uu = AA \ qq
    
@@ -49,22 +54,28 @@ function calcMTSources1D(sigma1D::Array{Float64,1}, param::MaxwellFreqParam)
    
    
    
+   rhs1, rhs2 = mtoctree( sigma1D, param.Mesh, uu, iw )
+
+   iw = complex(0., param.freq)
+   param.Sources = [ rhs1  -rhs2 ] / iw
+   
+   return param 
 end  # function calcMTSources1D
 
 #------------------------------------------------------------
 
-function mtoctree(sigma1D::Array{Float64,1}, M::AbstractMesh,
-                  uu::Array{Complex128,1})
+function mtoctree(sigma1D::Array{Float64,1}, Mesh::AbstractMesh,
+                  uu::Array{Complex128,1}, iw::Complex128)
    
-   EX, EY, EZ = getEdgeNumbering(M)
+   EX, EY, EZ = getEdgeNumbering(Mesh)
 
    ux = Array{Complex128}(Mesh.ne[1])
    uy = Array{Complex128}(Mesh.ne[2])
 
    # Transfer uu from 1d layers to octree.
    i,j,k,esz = find3(EX)
-   for i = 1 : length(ux)
-      ux[i] = uu[k[i]]
+   for ii = 1 : length(ux)
+      ux[ii] = uu[k[ii]]
    end 
 
    i,j,k,esz = find3(EY)
@@ -73,27 +84,41 @@ function mtoctree(sigma1D::Array{Float64,1}, M::AbstractMesh,
    end 
 
    # Transfer sigma from 1d layers to octree
-   sig1doctree = Array{Float64}(M.nc)
-   i,j,k,bsz = find3(M.S)
+   sig1doctree = Array{Float64}(Mesh.nc)
+   i,j,k,bsz = find3(Mesh.S)
    for ii = 1 : length(sig1doctree)
       layer = k[ii]
       nlayers = bsz[ii]
       sig1doctree[ii] = mean( sigma1D[layer : layer+nlayers-1] )
    end
 
-   V  = getVolume(M)
-   Ae2c = getEdgeAverageMatrix(M)
+   V  = getVolume(Mesh)
+   Ae2c = getEdgeAverageMatrix(Mesh)
    
    sigoctedge = Ae2c' * V * sig1doctree
    
+   
+   Curl = getCurlMatrix(Mesh)
+   Mmu  = getFaceMassMatrix(Mesh, fill(1/mu0, Mesh.nc))
+   CTC = Curl' * Mmu * Curl
+   
+   
    EE = zeros(Complex128, sum(Mesh.ne))
    EE[1 : Mesh.ne[1]] = ux
-   
+   rhs1 = MT_rhs( CTC, EE, iw, sigoctedge)
    
    
    EE = zeros(Complex128, sum(Mesh.ne))
    EE[Mesh.ne[1]+1 : Mesh.ne[1]+Mesh.ne[2]] = uy
+   rhs2 = MT_rhs( CTC, EE, iw, sigoctedge)
    
-   
-   
+   return rhs1, rhs2
 end  # function mtoctree
+
+#---------------------------------------------------------
+
+function MT_rhs( CTC::SparseMatrixCSC, EE::Array{Complex128,1},
+                 iw::Complex128, sigoctedge::Array{Float64,1} )
+   rhs = CTC*EE + iw*(sigoctedge .* EE)
+   return rhs
+end  # function MT_rhs

@@ -1,6 +1,6 @@
 
 # Receiver centres
-x = [-100.  0.  100]
+x = linspace(-100.,100., 7)  # [-100.  0.  100]
 y = x
 z = 0.
 
