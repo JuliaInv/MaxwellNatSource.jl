@@ -1,0 +1,18 @@
+../../meshInv.txt      ! mesh file
+locations.txt   !locations file
+FWDMODEL ../../model_blocks.con                        ! initial model
+VALUE 0.1                        ! reference model
+ALL_ACTIVE   ! topography active cell filee | ALL_ACTIVE
+ALL_ACTIVE              ! model active cell file | ALL_ACTIVE
+NO_WEIGHT               ! cell weight file | NO_WEIGHT
+NO_FACE_WEIGHT  !NO_FACE_WEIGHT          ! face weighting file
+USE_L2 !| USE_EKBLOM pexp eps  ! regularization type
+1.e-2  1.e-20  0.5   ! DEFAULT ! beta_max  beta_min  beta_factor
+1e-5  100.  100.  1.      ! alpha_s  alpha_x  alpha_y  alpha_z
+1.   ! chifact
+4  20    !  iter_per_beta  nbetas
+1.e-2  10           ! tol_ipcg  max_iter_ipcg
+CHANGE_MREF
+SMOOTH_MOD_DIF       ! SMOOTH_MOD | SMOOTH_MOD_DIF
+BOUNDS_NONE          !BOUNDS_CONST 1.e-10  1.e+10    ! bounds
+FACTOR_IC   !| FACTOR_OOC directory
