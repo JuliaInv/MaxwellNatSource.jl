@@ -26,7 +26,7 @@ function calcMTSources(sigma::Array{Float64,1}, param::MaxwellFreqParam, doClear
 
     Ne, = getEdgeConstraints(param.Mesh)
     iw = complex(0., param.freq)
-    param.Sources = (Ne*[ q1  q2 ]) / iw
+    param.Sources = (Ne*[ q1  -q2 ]) / iw
 
     if doClear
         # clear fields and factorization

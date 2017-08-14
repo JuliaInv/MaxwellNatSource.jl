@@ -315,9 +315,9 @@ function addTopo(S::SparseArray3D,
                  cellsize=1 )             # size of the smallest surface cells
     # Add fine topography in only the region of interest.
 
-    if size(itopo,1) != S.sz[1] ||
-       size(itopo,2) != S.sz[2]
-        error("size(itopo,1) != S.sz[1] ...")
+    if length(itopo) != 1 && (size(itopo,1) != S.sz[1] ||
+                              size(itopo,2) != S.sz[2])
+       error("size(itopo,1) != S.sz[1] ...")
     end
 
     npts = div(ix2-ix1+1, cellsize) *
@@ -336,7 +336,11 @@ function addTopo(S::SparseArray3D,
           ii[ic] = i + hh
           jj[ic] = j + hh
           
-          itp = mean( itopo[i:i+cellsize-1, j:j+cellsize-1] )
+          if length(itopo) == 1
+             itp = itopo[1,1]
+          else
+             itp = mean( itopo[i:i+cellsize-1, j:j+cellsize-1] )
+          end
           kk[ic] = round(Int64,itp) - hh - 1
        end
     end  # j

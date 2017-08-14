@@ -160,7 +160,11 @@ for j = 1:n[2]
       xx0 = x0[1] + (i-0.5)*h[1]
       yy0 = x0[2] + (j-0.5)*h[2]
       if insidePolygon(x,y, xx0,yy0)
-         itp = itopo[i,j]
+         if length(itopo) == 1
+            itp = itopo[1,1]
+         else
+            itp = itopo[i,j]
+         end
          k1   = max(k1,  itp + 1)
          klow = min(klow,itp + 1)
       end
@@ -297,17 +301,21 @@ function findActiveCells!(M::OcTreeMesh, itopo::Array{Int64,2})
       k = kk[ic]
       v = vv[ic]
       
-      if v == 1
-         itp = itopo[i,j]
+      if length(itopo) == 1
+         itp = itopo[1,1]
       else
-         # average topo
-         itp = round( sum(itopo[i:i+v-1, j:j+v-1]) / v^2 )
-         if k <= itp && itp <= k+v-1
-            if itp < k+div(v,2)
-               itp = k-1
+         if v == 1
+            itp = itopo[i,j]
+         else
+            # average topo
+            itp = round( sum(itopo[i:i+v-1, j:j+v-1]) / v^2 )
+            if k <= itp && itp <= k+v-1
+               if itp < k+div(v,2)
+                  itp = k-1
+               end
+               
+               itopo[i:i+v-1, j:j+v-1] = itp
             end
-            
-            itopo[i:i+v-1, j:j+v-1] = itp
          end
       end
       

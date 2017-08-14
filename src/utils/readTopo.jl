@@ -112,7 +112,7 @@ function getItopo(
 # the x,y grid.
 
    
-   itopo = Array{Int64}(n[1], n[2])
+   itopo = Array{Int64}(1,1)  #(n[1], n[2])
    const z0 = x0[3]  # bottom of the mesh
    const dz = h[3]
    const nz = n[3]
