@@ -1,6 +1,7 @@
 
 
-d = load("dataZTEM.txt");
+d = load("redo/dataZTEM.txt");
+%d = load("redo/dataZTEM_1Dsrc.txt");
 %d_e3d = load("e3dmt/MT_data.txt");
 d_e3d = load("e3dmt/dpred0.txt");
 
