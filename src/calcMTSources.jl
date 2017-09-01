@@ -102,46 +102,59 @@ function getMTSourceEdges(M::AbstractMesh)
 
     _, _, pe = getEdgeConstraints(M)
 
-    gEx, gEy, gEz = getEdgeGrids(M)
+    #gEx, gEy, gEz = getEdgeGrids(M)
+    EXN, EYN, EZN = getEdgeNumbering(M)
 
-    indBottomX = find(gEx[:,3] .== minimum(gEx[:,3]))
-    indTopX = find(gEx[:,3] .== maximum(gEx[:,3]))
-    indSouthX = find(gEx[:,2] .== minimum(gEx[:,2]))
-    indNorthX = find(gEx[:,2] .== maximum(gEx[:,2]))
+    # X Edges
+    s1,s2,s3 = size(EXN)
+    i,j,k = find3(EXN)
+    indBottomX = find(k.==1)
+    indTopX    = find(k.==s3)
+    indSouthX  = find(j.==1)
+    indNorthX  = find(j.==s2)
 
-    indBottomY = find(gEy[:,3] .== minimum(gEy[:,3]))
-    indTopY = find(gEy[:,3] .== maximum(gEy[:,3]))
-    indWestY = find(gEy[:,1] .== minimum(gEy[:,1]))
-    indEastY = find(gEy[:,1] .== maximum(gEy[:,1]))
 
-    indWestZ = find(gEz[:,1] .== minimum(gEz[:,1]))
-    indEastZ = find(gEz[:,1] .== maximum(gEz[:,1]))
-    indSouthZ = find(gEz[:,2] .== minimum(gEz[:,2]))
-    indNorthZ = find(gEz[:,2] .== maximum(gEz[:,2]))
+    # Y Edges
+    s1,s2,s3 = size(EYN)
+    i,j,k = find3(EYN)
+    indBottomY = find(k.==1)
+    indTopY    = find(k.==s3)
+    indWestY   = find(i.==1)
+    indEastY   = find(i.==s1)
 
     indBottomY += M.ne[1]
-    indTopY += M.ne[1]
-    indWestY += M.ne[1]
-    indEastY += M.ne[1]
+    indTopY    += M.ne[1]
+    indWestY   += M.ne[1]
+    indEastY   += M.ne[1]
 
-    indWestZ += M.ne[1] + M.ne[2]
-    indEastZ += M.ne[1] + M.ne[2]
+
+    # Z Edges
+    s1,s2,s3 = size(EZN)
+    i,j,k = find3(EZN)
+    indWestZ  = find(i.==1)
+    indEastZ  = find(i.==s1)
+    indSouthZ = find(j.==1)
+    indNorthZ = find(j.==s2)
+
+    indWestZ  += M.ne[1] + M.ne[2]
+    indEastZ  += M.ne[1] + M.ne[2]
     indSouthZ += M.ne[1] + M.ne[2]
     indNorthZ += M.ne[1] + M.ne[2]
 
+
     # Eliminate hanging edges
     indBottomX = removeZeros(pe[indBottomX])
-    indTopX = removeZeros(pe[indTopX])
-    indSouthX = removeZeros(pe[indSouthX])
-    indNorthX = removeZeros(pe[indNorthX])
+    indTopX    = removeZeros(pe[indTopX])
+    indSouthX  = removeZeros(pe[indSouthX])
+    indNorthX  = removeZeros(pe[indNorthX])
     indBottomY = removeZeros(pe[indBottomY])
-    indTopY = removeZeros(pe[indTopY])
-    indWestY = removeZeros(pe[indWestY])
-    indEastY = removeZeros(pe[indEastY])
-    indWestZ = removeZeros(pe[indWestZ])
-    indEastZ = removeZeros(pe[indEastZ])
-    indSouthZ = removeZeros(pe[indSouthZ])
-    indNorthZ = removeZeros(pe[indNorthZ])
+    indTopY    = removeZeros(pe[indTopY])
+    indWestY   = removeZeros(pe[indWestY])
+    indEastY   = removeZeros(pe[indEastY])
+    indWestZ   = removeZeros(pe[indWestZ])
+    indEastZ   = removeZeros(pe[indEastZ])
+    indSouthZ  = removeZeros(pe[indSouthZ])
+    indNorthZ  = removeZeros(pe[indNorthZ])
 
     nedges = countnz(pe) # number of constrained edges
 
@@ -160,7 +173,7 @@ function getMTSourceEdges(M::AbstractMesh)
     inInd2 = setdiff(1:nedges, bInd2)
 
     return indTopX, inInd1, indTopY, inInd2
-end
+end  # function getMTSourceEdges
 
 """
     qq = solveMTsystem(trx, M)
@@ -186,9 +199,8 @@ function solveMTsystem( bInd::Vector{Int64},
                         inInd::Vector{Int64},
                         param::MaxwellFreqParam,
                         sigma::Vector{Float64})
-   
 
-    A = getMaxwellFreqMatrix(sigma,param.freq,param.Mesh)
+    A = getMaxwellFreqMatrix(sigma,param.freq, param.useIw, param.Mesh)
 
     bc  = ones(length(bInd))  # boundary condition
     Aii =  A[inInd, inInd]

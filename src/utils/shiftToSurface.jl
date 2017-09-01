@@ -7,7 +7,7 @@ function putRcvOnSurf(
                      h::Vector{Float64},          # (3) underlying cell size
                      n::Vector{Int64},            # number of underlying cells
                      x0::Vector{Float64},         # corner coordinates
-                     itopo::Array{Int64,2})       # # of SURFACE cells
+                     itopo::Array{Int32,2})       # # of SURFACE cells
 # Put the receivers on the topo surface.
 
    ntrx = length(trx)   
@@ -40,7 +40,7 @@ function findSurface(
                      h::Vector{Float64},          # (3) underlying cell size
                      n::Vector{Int64},            # number of underlying cells
                      x0::Vector{Float64},         # corner coordinates
-                     itopo::Array{Int64,2},       # # of SURFACE cells
+                     itopo::Array{Int32,2},       # # of SURFACE cells
                      xx::Float64, yy::Float64 )   # location
 # Find the Z surface value for point (xx,yy).   
    

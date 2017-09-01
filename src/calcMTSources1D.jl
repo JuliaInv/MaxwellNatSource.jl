@@ -30,7 +30,7 @@ function calcMTSources1D(sigma1D::Array{Float64,1},  # 1D conductivity vector on
    
    AA = complex( -D1' * D1,  0. )
 
-   if use_iw
+   if param.useIw
       iw =  complex(0., param.freq)
    else
       iw = -complex(0., param.freq)

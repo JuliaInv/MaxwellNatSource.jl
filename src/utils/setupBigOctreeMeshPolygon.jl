@@ -9,7 +9,7 @@ function setupBigOctreeMeshPolygon(
                h::Vector{Float64},          # (3) underlying cell size
                n::Vector{Int64},            # number of underlying cells
                x0::Vector{Float64},         # corner coordinates
-               itopo::Array{Int64,2},       # # of SURFACE cells
+               itopo::Array{Int32,2},       # # of SURFACE cells
                depth_core::Vector{Float64}, # how far to go down in core region for fwd meshes
                mincellfactor,               # minimum cellsize below topo
                doFV::Bool = true)
@@ -71,7 +71,7 @@ function setupBigOctreeMeshPolygonWithRecs(
                h::Vector{Float64},          # (3) underlying cell size
                n::Vector{Int64},            # number of underlying cells
                x0::Vector{Float64},         # corner coordinates
-               itopo::Array{Int64,2},       # # of SURFACE cells
+               itopo::Array{Int32,2},       # # of SURFACE cells
                depth_core::Vector{Float64}, # how far to go down in core region for fwd meshes
                mincellfactor,               # minimum cellsize below topo
                doFV::Bool = true)
@@ -146,7 +146,7 @@ function belowSurfBox(S::SparseArray3D,
                       n::Vector{Int64},            # number of underlying cells
                       x0::Vector{Float64},         # corner coordinates
                       x::Vector{Float64}, y::Vector{Float64},  # polygon points
-                      itopo::Array{Int64,2},       # # of SURFACE cells
+                      itopo::Array{Int32,2},       # # of SURFACE cells
                       depth_core::Vector{Float64}, # how far to go down in core region for fwd meshes
                       mincellfactor                # minimum cellsize below topo
                       )
@@ -197,7 +197,7 @@ function belowSurf(S::SparseArray3D,
                    h::Vector{Float64},          # (3) underlying cell size
                    x0::Vector{Float64},         # corner coordinates
                    x::Vector{Float64}, y::Vector{Float64},  # polygon points
-                   itopo::Array{Int64,2},       # # of SURFACE cells
+                   itopo::Array{Int32,2},       # # of SURFACE cells
                    depth_core::Vector{Float64}, # how far to go down in core region for fwd meshes
                    mincellfactor                # minimum cellsize below topo
                    )
@@ -287,7 +287,7 @@ end
 #    return rxPts[:,1], rxPts[:,2]
 #end
 
-function findActiveCells!(M::OcTreeMesh, itopo::Array{Int64,2})
+function findActiveCells!(M::OcTreeMesh, itopo::Array{Int32,2})
 # Iact is true for surface cells and false for air.
 # In the padding region where cells are large, itopo is set to the
 # average topography.
@@ -327,7 +327,7 @@ function findActiveCells!(M::OcTreeMesh, itopo::Array{Int64,2})
    return Iact
 end # function findActiveCells!
 
-function findActiveCells_CellCentre(M::OcTreeMesh, itopo::Array{Int64,2})
+function findActiveCells_CellCentre(M::OcTreeMesh, itopo::Array{Int32,2})
 # Iact is true for surface cells and false for air.
 # In the padding region where cells are large, itopo is set topo value
 # at the centre of the cell

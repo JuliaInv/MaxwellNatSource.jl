@@ -12,7 +12,8 @@ module MaxwellNatSource
     const mu0 = 4*pi*1e-7
 
 
-    include("utils/readDataFiles.jl")
+  #  include("utils/readDataFiles.jl")
+    include("utils/readMTDataFiles.jl")
     include("utils/getTrxOmega.jl")
     include("utils/readTopo.jl")
     include("utils/setupMeshParam.jl")

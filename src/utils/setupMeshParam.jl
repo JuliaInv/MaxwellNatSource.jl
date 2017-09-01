@@ -5,7 +5,8 @@ function setupMeshParam(
                 topofile::Union{String,Float64},  # topo file name
                 n::Vector{Int64},       # number of underlying cells
                 x0::Vector{Float64},    # corner coordinates
-                meshL::Vector{Float64}; # mesh lengths
+                meshL::Vector{Float64}, # mesh lengths
+                datatype::String;  # one of "MT", "ZTEM", "EH"
                 only_loc = false  )  # true for only locations
 
 if !ispow2(n[1]) || !ispow2(n[2]) || !ispow2(n[3]) 
@@ -13,17 +14,17 @@ if !ispow2(n[1]) || !ispow2(n[2]) || !ispow2(n[3])
 end
    
    
-#only_loc = false  # true for only locations
-if length(datafile) == 1   
-   trx = read_datafile( datafile[1], only_loc )  
+#if length(datafile) == 1   
+#   trx = read_datafile( datafile[1], only_loc )  
 
-elseif length(datafile) == 4
-   datainput, trx, rcv, frq, dataidx = readAllFiles( 
+if length(datafile) == 4
+   datainput, trx, rcv, frq, dataidx, ndataTotal = readAllFiles( 
                                           datafile[1], datafile[2],
-                                          datafile[3], datafile[4], only_loc)
+                                          datafile[3], datafile[4],
+                                          datatype, only_loc)
    trx = getTrxOmega(datainput, trx, rcv, frq, dataidx)
 else
-   error("length(datafile) should be 1 or 4.")
+   error("length(datafile) should be 4.")
 end
 
 # Get extent of the transmitters and receivers.   
@@ -39,8 +40,9 @@ else
    topogrid = topofile   # constant topography
 end
 
-mintp = minimum(topogrid)
-maxtp = maximum(topogrid)
+#mintp = minimum(topogrid)
+#maxtp = maximum(topogrid)
+mintp, maxtp = extrema(topogrid)
 
 
 xn = x0 + meshL  # opposite corner
@@ -60,7 +62,7 @@ end
 itopo = getItopo(h,n,x0, topogrid)
    
    
-return trx, h, itopo
+return trx, h, itopo, ndataTotal
 end # function setupMeshParam
 
 #---------------------------------------------------------------
@@ -104,12 +106,14 @@ z1 = Inf;  z2 = -Inf
 for itrx = 1:length(trx)
    tr = trx[itrx]
    
-   x1 = min( minimum(tr.Srcs[1][:,1]), x1 )
-   x2 = max( maximum(tr.Srcs[1][:,1]), x2 )
-   y1 = min( minimum(tr.Srcs[1][:,2]), y1 )
-   y2 = max( maximum(tr.Srcs[1][:,2]), y2 )
-   z1 = min( minimum(tr.Srcs[1][:,3]), z1 )
-   z2 = max( maximum(tr.Srcs[1][:,3]), z2 )
+   if length(tr.Srcs) > 0
+      x1 = min( minimum(tr.Srcs[1][:,1]), x1 )
+      x2 = max( maximum(tr.Srcs[1][:,1]), x2 )
+      y1 = min( minimum(tr.Srcs[1][:,2]), y1 )
+      y2 = max( maximum(tr.Srcs[1][:,2]), y2 )
+      z1 = min( minimum(tr.Srcs[1][:,3]), z1 )
+      z2 = max( maximum(tr.Srcs[1][:,3]), z2 )
+   end
    
    nrcv = length(tr.Recs)  # # of receivers
    for ir = 1:nrcv

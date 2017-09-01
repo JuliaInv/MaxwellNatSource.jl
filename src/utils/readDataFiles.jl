@@ -23,7 +23,6 @@ end  # type freqinfo
 type datainfo
    trx_idx::Int
    frq_idx::Int
-  # omega  # 2*pi*frequency
    rcv_idx::Int
    dataid::Int
    dobs::Array{Float64}   # (2)  observed data
@@ -64,8 +63,6 @@ function readTrxRcvFile( datafile::String )
 
    f = open(datafile,"r")
 
-  # line = skipcmnts(f)
-  # ntrx = parse(Int,line[1])  # total # of transmitters or receivers in the file
    trx = Array{TrxRcv}
 
    for iread = 1:2  # =1 read/count, =2 store
@@ -146,9 +143,6 @@ function readFrqFile( frqfile::String )
 
    f = open(frqfile,"r")
 
-   #line = skipcmnts(f)
-   #nfrq = parse(Int,line[1])  # total # of frequencies in the file
-
    freq = Array{freqinfo}
 
    for iread = 1:2  # =1 read/count, =2 store
@@ -199,8 +193,6 @@ function readDataFile( datafile::String,
                        only_loc::Bool )  # true to only read locations, false for data and sd
 
    f = open(datafile,"r")
-   #line = skipcmnts(f)
-   #ndata = parse(Int,line[1])  # total # of data lines to read
 
    datainput = Array{datainfo}
 
@@ -211,7 +203,6 @@ function readDataFile( datafile::String,
 
       ndata = 0
 
-      #for id = 1:ndata
       while true
          line = skipcmnts(f)
          if length(line) == 0
@@ -261,10 +252,6 @@ function readDataFile( datafile::String,
                   ii += 2
                end  # j
       
-             #  if all(sd .== ignore)
-             #     println(line)
-             #     error("all data components are ignored.")
-             #  end
       
                datainput[ndata] = datainfo( trx_idx, frq_idx, rcv_idx, dataid, dobs, sd )
             end

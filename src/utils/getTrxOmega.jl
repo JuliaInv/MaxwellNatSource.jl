@@ -36,8 +36,12 @@ for i = 1:ntrx
 
    Recs = getRcv( datainput[id1:id2], rcv )
 
-   Srcs = Array{Array{Float64}}(1)
-   Srcs[1] = trx[ datainput[id1].trx_idx ].trxpts'
+   if length(trx) > 0
+      Srcs = Array{Array{Float64}}(1)
+      Srcs[1] = trx[ datainput[id1].trx_idx ].trxpts'
+   else # no source for MT or ZTEM  
+      Srcs = Array{Array{Float64}}(0)
+   end
 
    omega = frq[ datainput[id1].frq_idx ].omega
 
@@ -71,8 +75,12 @@ for i = 1:ntrx
 
    Recs = getRcv( datainput[id1:id2], rcv )
 
-   Srcs = Array{Array{Float64}}(1)
-   Srcs[1] = trx[ datainput[id1].trx_idx ].trxpts'
+   if length(trx) > 0
+      Srcs = Array{Array{Float64}}(1)
+      Srcs[1] = trx[ datainput[id1].trx_idx ].trxpts'
+   else # no source for MT or ZTEM  
+      Srcs = Array{Array{Float64}}(0)
+   end
 
    omega = frq[ datainput[id1].frq_idx ].omega
 
@@ -88,35 +96,56 @@ end # function getTrxOmega
 function getDobsWd( datainput::Vector{datainfo} )
 
 nrcv = length(datainput)
+ncomp = length(datainput[1].dobs)
 
-if length(datainput[1].dobs) < 2
+if ncomp < 2
    return [0], [0]   # no data
 end
 
-Dobs = Array{Complex128}(nrcv)
-Wd   = Array{Complex128}(nrcv)
-ignore = -99
+
+if ncomp == 2*4  # for MT
+   Dobs = Array{Complex128}(2,2,nrcv)
+   Wd   = Array{Complex128}(2,2,nrcv)
+elseif ncomp == 2*2  # for ZTEM
+   Dobs = Array{Complex128}(2,nrcv)
+   Wd   = Array{Complex128}(2,nrcv)
+elseif ncomp == 2  # for EH
+   Dobs = Array{Complex128}(nrcv)
+   Wd   = Array{Complex128}(nrcv)
+else
+   error("bad ncomp")
+end   
+
 
 for j = 1:nrcv
 
-   if datainput[j].sd[1] != ignore   # real component
-      d_r  = datainput[j].dobs[1]
-      Wd_r = 1.0 / datainput[j].sd[1]
-   else
-      d_r  = 0.0  # dummy value
-      Wd_r = 0.0
+   ddobs = datainput[j].dobs
+   dsd   = datainput[j].sd
+
+   if ncomp == 2*4  # for MT
+      Dobs[2,2,j] = complex( ddobs[1], ddobs[2] )
+      Dobs[2,1,j] = complex( ddobs[3], ddobs[4] )
+      Dobs[1,2,j] = complex( ddobs[5], ddobs[6] )
+      Dobs[1,1,j] = complex( ddobs[7], ddobs[8] )
+
+      Wd[2,2,j] = complex( dsd[1], dsd[2] )
+      Wd[2,1,j] = complex( dsd[3], dsd[4] )
+      Wd[1,2,j] = complex( dsd[5], dsd[6] )
+      Wd[1,1,j] = complex( dsd[7], dsd[8] )
+   
+   elseif ncomp == 2*2  # for ZTEM
+      Dobs[2,j] = complex( ddobs[1], ddobs[2] )
+      Dobs[1,j] = complex( ddobs[3], ddobs[4] )
+      
+      Wd[2,j] = complex( dsd[1], dsd[2] )
+      Wd[1,j] = complex( dsd[3], dsd[4] )
+
+   elseif ncomp == 2  # for EH
+      Dobs[j] = complex(ddobs[1], ddobs[2])
+      Wd[j]   = complex(dsd[1], dsd[2])
+
    end
 
-   if datainput[j].sd[2] != ignore  # imaginary component
-      d_i  = datainput[j].dobs[2]
-      Wd_i = 1.0 / datainput[j].sd[2]
-   else
-      d_i  = 0.0  # dummy value
-      Wd_i = 0.0
-   end
-
-   Dobs[j] = complex(d_r , d_i)
-   Wd[j]   = complex(Wd_r, Wd_i)
 
 end  # j
 
@@ -128,16 +157,46 @@ end # function getDobsWd
 function getRcv( datainput::Vector{datainfo}, rcv::Vector{TrxRcv} )
 
 nrcv = length(datainput)
+n    = length(datainput[1].rcv_idx)
 
-Recs = Array{Array{Float64}}(nrcv)
+Recs = Array{Array{Float64}}(nrcv*n)
 
-for j = 1:nrcv
+if n == 4  # for MT
+   isloop = [ false false true true ]
+elseif n == 3  # for ZTEM
+   isloop = [ true true true ]
+end
 
-   idx = datainput[j].rcv_idx
-   Recs[j] = rcv[idx].trxpts'
+jj = 1
+for j = 1 : nrcv
 
+   for i = 1 : n
+
+      idx = datainput[j].rcv_idx[i]
+      Recs[jj] = rcv[idx].trxpts'
+      
+      if n==4 || n==3
+         if checkLoop(Recs[jj]) != isloop[i]
+            println(datainput[j])
+            println(Recs[jj])
+            if isloop[i]
+               error("expecting loop, receiver not a loop")
+            else
+               error("expecting line, receiver is a loop")
+            end
+         end
+      end  # n==4 || n==3
+
+      jj += 1
+   end  # i
 end  # j
 
 return Recs
 end # function getRcv
 
+#----------------------------------------------------------
+
+function checkLoop( Recs::Array{Float64,2} )
+   # Return true if the receiver is a closed loop.
+   return norm(Recs[1,:] - Recs[end,:]) < 1e-16
+end  # function checkLoop

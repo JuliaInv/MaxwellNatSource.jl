@@ -1,9 +1,6 @@
-#using Mesh
 
 export readTopo, getItopo
 export ShepardsInterpolation
-
-#const topogridlib = "E:\\shekht\\repository\\triangulation\\x64\\Release\\topo_grid"
 
 function readTopo( topofile::String,  # topo file name
                    nxy::Vector{Int64},     #  # of cells in the grid
@@ -27,6 +24,9 @@ function readTopo( topofile::String,  # topo file name
 
    for ipt = 1:ntp
       line = split(readline(f))
+      if length(line) < 3
+         error("error in topography file.")
+      end
       topoloc[ipt,1] = parse(Float64,line[1]) # x
       topoloc[ipt,2] = parse(Float64,line[2]) # y
       topoloc[ipt,3] = parse(Float64,line[3]) # z
@@ -82,7 +82,7 @@ function getItopo(
 	   error("topogrid,1) != n[1] ...")
 	end
 	
-   itopo = Array{Int64}(n[1], n[2])
+   itopo = Array{Int32}(n[1], n[2])
    const z0 = x0[3]  # bottom of the mesh
    const dz = h[3]
    const nz = n[3]
@@ -112,7 +112,7 @@ function getItopo(
 # the x,y grid.
 
    
-   itopo = Array{Int64}(1,1)  #(n[1], n[2])
+   itopo = Array{Int32}(1,1)  #(n[1], n[2])
    const z0 = x0[3]  # bottom of the mesh
    const dz = h[3]
    const nz = n[3]

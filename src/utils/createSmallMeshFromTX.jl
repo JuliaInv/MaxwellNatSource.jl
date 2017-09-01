@@ -10,7 +10,7 @@ function createSmallMeshFromTX(
                     x0::Vector{Float64},           # corner coordinates
                     nsmallcells::Vector{Int64},    # # of small cells around each point.
                     mincellsize,                   # minimum cell size in the data area
-                    itopo::Array{Int64,2},         # # of SURFACE cells
+                    itopo::Array{Int32,2},         # # of SURFACE cells
                     depth_core::Vector{Float64},   # how far to go down in the core region for the fwd meshes
                     mincellfactor,                 # minimum cellsize below topo
                     doFV::Bool = true)
@@ -214,7 +214,7 @@ function cellsBelowSurf(
                 h::Vector{Float64},             # (3) underlying cell size
                 n::Vector{Int64},               # number of underlying cells
                 x0::Vector{Float64},            # corner coordinates
-                itopo::Array{Int64,2},          # # of SURFACE cells
+                itopo::Array{Int32,2},          # # of SURFACE cells
                 depth_core::Vector{Float64},    # how far to go down in the core region for the fwd meshes
                 mincellfactor )                 # minimum cellsize below topo
 
@@ -264,7 +264,7 @@ function cellsBelowSurf(
                 h::Vector{Float64},             # (3) underlying cell size
                 n::Vector{Int64},               # number of underlying cells
                 x0::Vector{Float64},            # corner coordinates
-                itopo::Array{Int64,2},          # # of SURFACE cells
+                itopo::Array{Int32,2},          # # of SURFACE cells
                 depth_core::Vector{Float64},    # how far to go down in the core region for the fwd meshes
                 mincellfactor )                 # minimum cellsize below topo
 
@@ -309,7 +309,7 @@ end  # function cellsBelowSurf
 #--------------------------------------------------------
 
 function addTopo(S::SparseArray3D,
-                 itopo::Array{Int64,2},   # # of SURFACE cells
+                 itopo::Array{Int32,2},   # # of SURFACE cells
                  ix1::Int64, ix2::Int64,  # indeces of cells in the region of interest
                  jy1::Int64, jy2::Int64,  # indeces of cells in the region of interest
                  cellsize=1 )             # size of the smallest surface cells
