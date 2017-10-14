@@ -1,6 +1,0 @@
-N_TRX 1
-
-DATATYPE MTH
-FREQUENCY 500.0
-INCLUDE ../../points.txt
-

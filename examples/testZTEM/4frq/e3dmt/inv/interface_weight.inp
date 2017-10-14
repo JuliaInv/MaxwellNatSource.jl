@@ -1,8 +1,0 @@
-../../meshInv.txt       ! input octree mesh file
-active_topo.txt         ! input active cell topography file | ALL_ACTIVE
-NO_MODEL  ! model file | NO_MODEL
-LOG_MODEL !| LIN_MODEL
-0.001  1 ! gradtol  weightface
-1         ! # of surface layers
-100  ! surface weight values for X and Y interfaces
-interfaceweights.txt  ! output weight file

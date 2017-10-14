@@ -2,13 +2,16 @@ using JOcTree
 using MaxwellFrequency
 using MaxwellNatSource
 using jInv.LinearSolvers
-using jInv.InverseSolve
+import CGI.InverseSolve, jInv.InverseSolve
+using CGI.InverseSolve, jInv.InverseSolve
 
 # ------- SETUP PARAMETERS FOR THE MODEL AND DATA
 
 # data and topo files
-datafile = [ "data_locations.txt",
-             "trx_dummy.txt",
+datatype = "ZTEM"
+
+datafile = [ "data_inv.txt",  #"data_locations.txt",
+             "",
              "receiver_locations.txt",
              "frequencies.txt" ]
 
@@ -17,6 +20,7 @@ topofile = 0. # "topo.txt"
 meshfile = "meshInv.txt"
 truemodelfile = "model_blocks.con"
 
+use_iw = true  # false # = true for i*omega, = false for -i*omega
 
 # of cells in base mesh
 #n     = vec([ 512  512  512 ])
@@ -56,7 +60,7 @@ BL = 1e-6
 BH = 1e+4
 
 # Regularization function
-regfun = wdiffusionReg
+regfun = wdiffusionRegGrad
 # parameters for the regularization function
 regparams = [sqrt(1.0), sqrt(1.0), sqrt(1.0), 5e-7]  # alphax  alphay  alphaz  alphas
 
@@ -74,8 +78,13 @@ maxit = 4
 
 nAlpha = 20  # number of tradeoff parameters
 alphaFac = 2.
+alphaMax = beta
+alphaMin = 1.e-10
+
+alphaParam = [alphaMax alphaMin alphaFac nAlpha]
+
 chifact = 1.0
-targetMisfit = chifact * (625 * 2*2) * 2
+#targetMisfit = chifact * (625 * 2*2) * 2
 
 # approximate mesh interpolation matrix (inv -> fwd) using [2^ninterp]^3 quadrature points
 # (set ninterp = [] to use full interpolation matrix)

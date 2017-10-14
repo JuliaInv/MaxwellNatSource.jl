@@ -36,7 +36,7 @@ function outputZTEMdata(filename::String, trx::TransmitterOmega, DD::Array{Compl
 
     fdata = open(filename, "w")
     for id = 1:nr
-        ir = id*3-2
+        ir = id*3
         mn,mx = extrema( trx.Recs[ir][:,1] )
         xx = ( mn + mx ) / 2.0
         mn,mx = extrema( trx.Recs[ir][:,2] )

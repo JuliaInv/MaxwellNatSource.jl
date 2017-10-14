@@ -1,5 +1,5 @@
 
-export TransmitterOmega, getTrxOmega
+export TransmitterOmega, getTrxOmega, checkLoop
 
 #----------------------------------------------------------
 
@@ -14,11 +14,13 @@ end # type TransmitterOmega
 
 #----------------------------------------------------------
 
-function getTrxOmega(datainput::Vector{datainfo},
-                     trx::Vector{TrxRcv},
-                     rcv::Vector{TrxRcv},
-                     frq::Vector{freqinfo},
-                     dataidx::Vector{Int64})
+function getTrxOmega( allInput::allDataInput )
+
+datainput = allInput.datainput
+trx       = allInput.trx
+rcv       = allInput.rcv
+frq       = allInput.frq
+dataidx   = allInput.dataidx
 
 ntrx = length(dataidx) - 1  # total # of transmitters-omega
 
@@ -52,44 +54,44 @@ end  # i
 return TX
 end # function getTrxOmega
 
-function getTrxOmega(datainput::Vector{datainfo},
-                     trx::Vector{TrxRcv},
-                     rcv::Vector{TrxRcv},
-                     frq::Vector{freqinfo})
-
-dataidx = divideData( datainput )
-
-ntrx = length(dataidx) - 1  # total # of transmitters-omega
-
-TX = Array{TransmitterOmega}(ntrx)
-
-for i = 1:ntrx
-
-   # indeces in datainput for this transmitter-omega
-   id1 = dataidx[i]
-   id2 = dataidx[i+1] - 1
-
-   #nrcv = id2 - id1 + 1  # # of receivers
-
-   Dobs, Wd = getDobsWd( datainput[id1:id2] )
-
-   Recs = getRcv( datainput[id1:id2], rcv )
-
-   if length(trx) > 0
-      Srcs = Array{Array{Float64}}(1)
-      Srcs[1] = trx[ datainput[id1].trx_idx ].trxpts'
-   else # no source for MT or ZTEM  
-      Srcs = Array{Array{Float64}}(0)
-   end
-
-   omega = frq[ datainput[id1].frq_idx ].omega
-
-   TX[i] = TransmitterOmega( Srcs, omega, Recs, Dobs, Wd )
-
-end  # i
-
-return TX
-end # function getTrxOmega
+#function getTrxOmega(datainput::Vector{datainfo},
+#                     trx::Vector{TrxRcv},
+#                     rcv::Vector{TrxRcv},
+#                     frq::Vector{freqinfo})
+#
+#dataidx = divideData( datainput )
+#
+#ntrx = length(dataidx) - 1  # total # of transmitters-omega
+#
+#TX = Array{TransmitterOmega}(ntrx)
+#
+#for i = 1:ntrx
+#
+#   # indeces in datainput for this transmitter-omega
+#   id1 = dataidx[i]
+#   id2 = dataidx[i+1] - 1
+#
+#   #nrcv = id2 - id1 + 1  # # of receivers
+#
+#   Dobs, Wd = getDobsWd( datainput[id1:id2] )
+#
+#   Recs = getRcv( datainput[id1:id2], rcv )
+#
+#   if length(trx) > 0
+#      Srcs = Array{Array{Float64}}(1)
+#      Srcs[1] = trx[ datainput[id1].trx_idx ].trxpts'
+#   else # no source for MT or ZTEM  
+#      Srcs = Array{Array{Float64}}(0)
+#   end
+#
+#   omega = frq[ datainput[id1].frq_idx ].omega
+#
+#   TX[i] = TransmitterOmega( Srcs, omega, Recs, Dobs, Wd )
+#
+#end  # i
+#
+#return TX
+#end # function getTrxOmega
 
 #----------------------------------------------------------
 

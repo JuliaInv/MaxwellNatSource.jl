@@ -3,7 +3,13 @@
 include("parametersForInversion.jl")
 
 
-trx, h, itopo = setupMeshParam(datafile, topofile, n,x0,meshL; only_loc=true )
+#trx, h, itopo = setupMeshParam(datafile, topofile, n,x0,meshL; only_loc=true )
+#trx = readZTEMdata("d_xyz.txt", trx)
+
+allInput, trx, h, itopo, ndataTotal = setupMeshParam(datafile, topofile, n,x0,meshL, datatype; only_loc=false )
+
+targetMisfit = chifact * ndataTotal * 2  # *2 is needed because there is a 0.5 in the phid calculation.
+
 
 #println("Prepare Inverse Mesh")
 #
@@ -30,32 +36,34 @@ sigma, sigmaBck, isactive = getInitialmodel(Minv, itopo, halfSpaceCond, backCond
 Iact    = speye(Bool,Minv.nc)
 Iact    = Iact[:,find(isactive)]
 IactBck = speye(Bool,Minv.nc)
-IactBck = IactBck[:,find(!isactive)]
+IactBck = IactBck[:,find(.!isactive)]
 
-#sigmaBackground = IactBck * sigmaBck
-#
-#
+sigmaBackground = IactBck * sigmaBck
+
+
 #sigmamodel = Iact*sigma + sigmaBackground
-#exportOcTreeModelRoman("model0.con",Minv, sigmamodel)
+#exportUBCOcTreeModel("model0.con",Minv, sigmamodel)
 
-sigmamodel = importUBCOcTreeModel(truemodelfile, Minv)
+#sigmamodel = importUBCOcTreeModel(truemodelfile, Minv)
 #toc()
 
 
 println("Generating all Obs")
 tic()
-Obs = getAllObs( trx, Minv )
+#Obs = getAllObs( trx, Minv )
+Obs = getObsFromAllRcv(allInput, trx, Minv)
 toc()
 
 
-linSolParam = getMUMPSsolver([],1,0,2)
+#linSolParam = getMUMPSsolver([],1,0,2)
+linSolParam = getjInvPardisoSolver( [],1,0,6,2 )
 #linSolParam = getIterativeSolver(KrylovMethods.bicgstb)
 
 
 using jInv.Utils.initRemoteChannel
 
 nFreqs = length(trx)
-pFor   = Array(RemoteChannel,nFreqs)
+pFor   = Array{RemoteChannel}(nFreqs)
 workerList = workers()
 nw         = length(workerList)
 for i = 1:nFreqs
@@ -63,37 +71,36 @@ for i = 1:nFreqs
 #     pFor[i] = initRemoteChannel(getMaxwellFreqParamSE,workerList[i%nw+1],
 #                                    M,Sources,Obs[i],fields,frq[i],linSolParam)
 #  else
-   Sources = Array(Complex128, 0, 0)
-   fields = Array(Complex128, 0, 0)
+   Sources = Array{Complex128}(0, 0)
+   fields = Array{Complex128}(0, 0)
    pFor[i] = initRemoteChannel(getMaxwellFreqParam, workerList[i%nw+1],
-                               Minv, Sources, Obs[i], fields,
-                               trx[i].omega, linSolParam)
+                               Minv, Sources, Obs[i],
+                               trx[i].omega, linSolParam, fields=fields, useIw=use_iw, storageLevel=:Matrices)
 #  end
 end  # i
 
 
-itx = 1
+#itx = 1
 
-pfor = fetch(pFor[itx])
+#pfor = fetch(pFor[itx])
 
 #-----------------------------------------------------
 
-println("Into calcMTSources")
-tic()
-#D1,D2, pfor, q1, q2 = getData( sigmamodel, pfor, true )
-pfor = calcMTSources( sigmamodel, pfor, true )
-toc()
+#println("Into calcMTSources")
+#tic()
+#pFor = calcMTSources( sigmamodel, pFor, true )
+#toc()
 
 
-println("Into getData")
-tic()
-DD, pfor = getData( sigmamodel, pfor, true )
-toc()
+#println("Into getData")
+#tic()
+#DD, pfor = getData( sigmamodel, pfor, true )
+#toc()
 
 #outputFieldZTEMdata("data11.txt", trx[itx], DD[:,1])
 #outputFieldZTEMdata("data22.txt", trx[itx], DD[:,2])
 
-outputZTEMdata("dataMT.txt", trx[itx], DD)
+#outputZTEMdata("dataMT.txt", trx[itx], DD)
 
 #-----------------------------------------------------
 
@@ -102,18 +109,28 @@ println("Setup Inverse Param")
 Dobs  = Array{Array{Complex128}}(nFreqs)
 Wd    = Array{Array{Complex128}}(nFreqs)
 
-trx[itx].Dobs = calcZTEMdata(DD)
 
-trx[itx].Wd = complex( 1.0 ./ (abs(real(trx[itx].Dobs))*0.01+1.e-5) ,
-                       1.0 ./ (abs(imag(trx[itx].Dobs))*0.01+1.e-5) );
+#trx[itx].Dobs = calcMTdata(DD)
 
-Dobs[itx] = trx[itx].Dobs
-  Wd[itx] = trx[itx].Wd
+#trx[itx].Wd = complex( 1.0 ./ (abs(real(trx[itx].Dobs))*0.01+1.e-5) ,
+#                       1.0 ./ (abs(imag(trx[itx].Dobs))*0.01+1.e-5) );
+
+for itx = 1 : nFreqs
+   Dobs[itx] = trx[itx].Dobs
+     Wd[itx] = trx[itx].Wd
+end
+
 
 #-----------------------------------------------------
 
 sigmaBackground = IactBck * sigmaBck
 sigmamodel = Iact*sigma + sigmaBackground
+
+println("Into calcMTSources")
+tic()
+pFor = calcMTSources( sigmamodel, pFor, true )
+toc()
+
 
 mref = fill(log(halfSpaceCond), size(Iact,2))
 
@@ -121,11 +138,6 @@ boundsLow  = fill(log(BL),size(Iact,2))
 boundsHigh = fill(log(BH),size(Iact,2))    
 
 pMisRF = getMisfitParam(pFor, Wd, Dobs, misfun,Iact,sigmaBackground)
-
-println("Into calcMTSources")
-tic()
-pfor = calcMTSources( sigmamodel, pfor, true )
-toc()
 
 
 if regfun == wdiffusionReg
@@ -154,6 +166,7 @@ pInv = getInverseParam(Minv,modfun,regfunw,beta,mref,
 print("=======  Start inversion =========\n")
 tic()
 m0 = fill(log(halfSpaceCond), size(Iact,2))
-mc,Dc,flag = iteratedTikhonov(m0,pInv,pMisRF, nAlpha,alphaFac, targetMisfit, dumpResults=dumpZTEM)
+
+mc,Dc,flag = iteratedTikhonov(m0,pInv,pMisRF, alphaParam, targetMisfit, dumpResults=dumpZTEM)
 toc()
 

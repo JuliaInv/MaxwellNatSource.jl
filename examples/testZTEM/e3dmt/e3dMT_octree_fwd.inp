@@ -1,7 +1,0 @@
-../meshInv.txt  !octree mesh file
-locations.txt   !locations file
-../model_blocks.con  ! real conductivity model | VALUE
-NO_IMAG_COND      ! imaginary conductivity model | NO_IMAG_COND
-VALUE 0.01        ! 1D background conductivity file | VALUE
-NO_SUS
-ALL_ACTIVE  ! topography active cell file | ALL_ACTIVE

@@ -92,9 +92,8 @@ tic()
 DD, pfor = getData( sigmamodel, pfor, true )
 toc()
 
-#outputFieldZTEMdata("data11.txt", trx[itx], DD[:,1])
-#outputFieldZTEMdata("data22.txt", trx[itx], DD[:,2])
+outputFieldMTdata("data11.txt", trx[itx], DD[:,1])
+outputFieldMTdata("data22.txt", trx[itx], DD[:,2])
 
-outputZTEMdata("dataZTEM.txt", trx[itx], DD)
-
+outputMTdata("dataMT.txt", trx[itx], DD)
 

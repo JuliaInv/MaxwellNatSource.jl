@@ -1,8 +1,0 @@
-
-
-Frequencies:
-8  31  199  1255
-
-Figures of the model, observed and predicted data.
-
-Data is 10m above surface.

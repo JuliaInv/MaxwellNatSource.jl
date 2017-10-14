@@ -70,9 +70,14 @@ fdata = open("data_locations.txt", "w")
 
 for i = 1:length(freq)
 
-   for j = 1:nrcv
-      @printf(fdata, "%i %i %i %i\n",  1, i, j, 1)
+#   for j = 1:nrcv
+#      @printf(fdata, "%i %i %i %i\n",  1, i, j, 1)
+#   end  # j
+
+   for j = 1:4:nrcv
+      @printf(fdata, "%i %i %i %i %i %i\n",  i, j, j+1, j+2, j+3, 1)
    end  # j
+
 end  # i
 
 close(fdata)

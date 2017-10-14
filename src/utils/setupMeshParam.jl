@@ -18,11 +18,11 @@ end
 #   trx = read_datafile( datafile[1], only_loc )  
 
 if length(datafile) == 4
-   datainput, trx, rcv, frq, dataidx, ndataTotal = readAllFiles( 
-                                          datafile[1], datafile[2],
-                                          datafile[3], datafile[4],
-                                          datatype, only_loc)
-   trx = getTrxOmega(datainput, trx, rcv, frq, dataidx)
+   allDataInput, ndataTotal = readAllFiles(datafile[1], datafile[2],
+                                           datafile[3], datafile[4],
+                                           datatype, only_loc)
+   trx = getTrxOmega(allDataInput)
+   
 else
    error("length(datafile) should be 4.")
 end
@@ -62,7 +62,7 @@ end
 itopo = getItopo(h,n,x0, topogrid)
    
    
-return trx, h, itopo, ndataTotal
+return  allDataInput, trx, h, itopo, ndataTotal
 end # function setupMeshParam
 
 #---------------------------------------------------------------

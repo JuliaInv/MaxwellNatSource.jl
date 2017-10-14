@@ -207,7 +207,7 @@ function solveMTsystem( bInd::Vector{Int64},
     rhs = -A[inInd, bInd] * bc
 
     param.Ainv.doClear = 1
-    Uin, param.Ainv = solveMaxFreq(Aii, rhs, sigma, param.Ainv)
+    Uin, param.Ainv = solveMaxFreq(Aii, rhs, sigma, param.Mesh, param.freq, param.Ainv)
     param.Ainv.doClear = 0
 
     nedges = size(A, 2) # constrained edges

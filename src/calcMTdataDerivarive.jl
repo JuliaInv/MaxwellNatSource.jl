@@ -76,7 +76,7 @@ function calcFullMTDerivative( DD::Array{Complex128,2} )  # (nr*4,2) E and H dat
     for ir = 1:fieldsPerData:ndata
 
         deriv1,deriv2 = MTderivs( DD[ir:ir+fieldsPerData-1, 1],
-                                 DD[ir:ir+fieldsPerData-1, 2] )  # 8x16 matrix
+                                  DD[ir:ir+fieldsPerData-1, 2] )  # 8x16 matrix
 
         irow = (j-1)*nrow + 1
         icol = (j-1)*ncol + 1
